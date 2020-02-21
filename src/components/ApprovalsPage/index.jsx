@@ -1,47 +1,57 @@
-import './App.css';
-import React, { Component } from "react";
+import React, { useState, useEffect } from 'react'
+
+import { useWeb3React } from '../../hooks'
+import { ERC20_META_ABI } from '../../constants/MetaERC20';
+import { findProject } from '../../context/projects';
+import { amountFormatter } from '../../utils';
+import Web3Status from '../../components/Web3Status'
+
+import Web3 from 'web3';
+import { ethers } from 'ethers'
 import { aggregate } from '@makerdao/multicall';
+import Typography from '@material-ui/core/Typography';
+import { withStyles } from '@material-ui/styles';
+
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardActions from '@material-ui/core/CardActions';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/styles';
 import Avatar from '@material-ui/core/Avatar';
-import GridListTile from '@material-ui/core/GridListTile';
 import Collapse from '@material-ui/core/Collapse';
-import { amountFormatter } from './utils';
-import { ethers } from 'ethers'
-import { Provider } from '@input-output-hk/react-grid'
-import Web3 from 'web3';
+import Button from '@material-ui/core/Button';
 import { Grid, Row } from '@input-output-hk/react-grid'
+import GridListTile from '@material-ui/core/GridListTile';
 
-import { ERC20_META_ABI } from './constants/MetaERC20';
+import styled from 'styled-components'
 
-import { findProject } from './context/projects';
+const HeaderElement = styled.div`
+  min-width: 0;
+  align-items: center;`
 
-function b (number) {
-  return ethers.utils.bigNumberify(number);
-}
+const HeaderFrame = styled.div`
+  display: flex;
+  margin-top: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;`
 
-const RPC_URL = "";
-
-var web3 = new Web3(RPC_URL || "ws://localhost:8545");
+const RPC_URL = process.env.REACT_APP_NETWORK_URL;
+const web3 = new Web3(RPC_URL);
 
 const multicallConfig = {
   multicallAddress: '0xeefba1e63905ef1d7acba5a8513c70307c1ce441',
   rpcUrl: RPC_URL
 };
 
-// TODO load target from web3 provider
-const target_address = '0xd4D221aD5b753a6fcBB58a6C7b6b92605CA5325F';
-
-function onlyUnique(value, index, self) { 
-  return self.indexOf(value) === index;
+function b (number) {
+  return ethers.utils.bigNumberify(number);
 }
 
 async function getAllApproved(account) {
+  function onlyUnique(value, index, self) { 
+    return self.indexOf(value) === index;
+  }
+  console.log("LOADING LOGS")
   const logs = await web3.eth.getPastLogs({
     fromBlock: 0,
     toBlock: 'latest',
@@ -51,7 +61,7 @@ async function getAllApproved(account) {
       `0x000000000000000000000000${account.replace('0x', '')}`              // Account topic
     ]
   });
-
+  console.log(logs)
   let out = [];
   for (let i = 0; i < logs.length; i++) {
     const log = logs[i];
@@ -164,54 +174,64 @@ async function realApproves(account, obj) {
   return obj;
 }
 
-const styles = theme => ({
-  content: {
-    maxWidth: 910,
-    margin: 'auto',
-    marginBottom: 110
-  },
-  title: {
-    fontSize: 14,
-  },
-  pos: {
-    marginBottom: 12,
-  },
-  gridList: {
-    width: 910,
-  },
-});
+const INITIAL_STATE = {
+  pending: [],
+  all: []
+}
 
-class App extends Component {
-  constructor() {
-    super();
-    this.state = { approved: []};
-  }
+function ApprovalsPage() {
+    const { account } = useWeb3React()
+    const [state, setState] = useState(INITIAL_STATE)
 
-  async componentDidMount() {
-    const approved = this.state.approved;
-    const allApprovedTokens = await getAllApproved(target_address);
-    for (let i = 0; i < allApprovedTokens.length; i++) {
-      const retrieve = await realApproves(target_address, allApprovedTokens[i]);
-      approved.push(retrieve);
-      this.setState({ approved: approved });
-    }
-  }
+    console.log(account)
+    useEffect(() => {
+      async function fetch() {
+        if (account !== undefined) {
+          const all = await getAllApproved(account)
+          setState({
+            ...INITIAL_STATE,
+            pending: all
+          })
+        }
+      }
+      fetch();
+    }, [account]);
 
-  render() {
-    const { classes } = this.props;
-
-    return <Provider>
-      <div className={classes.content}>
-      <div  style={{marginTop:75, marginLeft: 10}}>
+    useEffect(() => {
+      async function fetch() {
+        if (account !== undefined && state.pending.length !== 0) {
+          const cpending = state.pending.slice()
+          const call = state.all.slice()
+          const token = cpending.shift()
+          const retrieve = await realApproves(account, token);
+          call.push(retrieve)
+          setState({
+            all: call,
+            pending: cpending
+          })
+        }
+      }
+      fetch();
+    }, [state.pending.length, account, state])
+  
+    console.log("Real approves", state)
+    return (
+    <>
+    <HeaderFrame>
+    <HeaderElement>
       <Typography variant="h3" gutterBottom>
         ERC20 Allowances
       </Typography>
       <Typography gutterBottom>
-        for address {target_address}
+        for address {account}
       </Typography>
-      </div>
+      </HeaderElement>
+      <HeaderElement>
+        <Web3Status/>
+      </HeaderElement>
+    </HeaderFrame>
       {
-      this.state.approved.map((item) => {
+      state.all.map((item) => {
         return item.real.length > 0 && <div key={`t1-${item.token}`}>
           <div style={{marginTop:45, marginLeft: 10}}>
             <Typography variant="h4">
@@ -223,7 +243,7 @@ class App extends Component {
             </Typography>
             }
           </div>
-          <Grid cellHeight={180} className={classes.gridList} cols={2}>
+          <Grid cellHeight={180} cols={2}>
           <Row spacing={1} columnSpacing={0.5} sm={1} md={1} xl={2}>
           {
             item.real.map((entry) => {
@@ -239,14 +259,30 @@ class App extends Component {
         </div>
       })
     }
-    </div>
-    </Provider>
-  }
+    </>
+    )
 }
+
+const styles = theme => ({
+  content: {
+    maxWidth: 950,
+    margin: 'auto',
+    marginBottom: 110
+  },
+  title: {
+    fontSize: 14,
+  },
+  pos: {
+    marginBottom: 12,
+  },
+  gridList: {
+    width: 950,
+  },
+});
 
 const useStyles2 = makeStyles(theme => ({
   content: {
-    maxWidth: 910,
+    maxWidth: 950,
     margin: 'auto'
   },
   card: {
@@ -262,7 +298,7 @@ const useStyles2 = makeStyles(theme => ({
     marginBottom: 12,
   },
   gridList: {
-    width: 910,
+    width: 950,
   },
   expand: {
     // transform: 'rotate(0deg)',
@@ -324,6 +360,4 @@ function openInNewTab(url) {
   win.focus();
 }
 
-export default withStyles(styles)(App);
-
-// ReactDOM.render(<App />, document.getElementById("app"));
+export default withStyles(styles)(ApprovalsPage);
