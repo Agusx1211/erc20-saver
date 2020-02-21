@@ -5,16 +5,9 @@ const UNISWAP = 'UNISWAP'
 const VERSION = 'VERSION'
 const CURRENT_VERSION = 0
 const LAST_SAVED = 'LAST_SAVED'
-
-const BETA_MESSAGE_DISMISSED = 'BETA_MESSAGE_DISMISSED'
-const GENERAL_DAI__MESSAGE_DISMISSED = 'GENERAL_DAI__MESSAGE_DISMISSED'
-const SAI_HOLDER__MESSAGE_DISMISSED = 'SAI_HOLDER__MESSAGE_DISMISSED'
 const DARK_MODE = 'DARK_MODE'
 
 const UPDATABLE_KEYS = [
-  GENERAL_DAI__MESSAGE_DISMISSED,
-  SAI_HOLDER__MESSAGE_DISMISSED,
-  BETA_MESSAGE_DISMISSED,
   DARK_MODE
 ]
 
@@ -48,9 +41,6 @@ function reducer(state, { type, payload }) {
 function init() {
   const defaultLocalStorage = {
     [VERSION]: CURRENT_VERSION,
-    [BETA_MESSAGE_DISMISSED]: false,
-    [GENERAL_DAI__MESSAGE_DISMISSED]: false,
-    [SAI_HOLDER__MESSAGE_DISMISSED]: false,
     [DARK_MODE]: true
   }
 
@@ -89,36 +79,6 @@ export function Updater() {
   })
 
   return null
-}
-
-export function useSaiHolderMessageManager() {
-  const [state, { updateKey }] = useLocalStorageContext()
-
-  const dismissSaiHolderMessage = useCallback(() => {
-    updateKey(SAI_HOLDER__MESSAGE_DISMISSED, true)
-  }, [updateKey])
-
-  return [!state[SAI_HOLDER__MESSAGE_DISMISSED], dismissSaiHolderMessage]
-}
-
-export function useGeneralDaiMessageManager() {
-  const [state, { updateKey }] = useLocalStorageContext()
-
-  const dismissGeneralDaiMessage = useCallback(() => {
-    updateKey(GENERAL_DAI__MESSAGE_DISMISSED, true)
-  }, [updateKey])
-
-  return [!state[GENERAL_DAI__MESSAGE_DISMISSED], dismissGeneralDaiMessage]
-}
-
-export function useBetaMessageManager() {
-  const [state, { updateKey }] = useLocalStorageContext()
-
-  const dismissBetaMessage = useCallback(() => {
-    updateKey(BETA_MESSAGE_DISMISSED, true)
-  }, [updateKey])
-
-  return [!state[BETA_MESSAGE_DISMISSED], dismissBetaMessage]
 }
 
 export function useDarkModeManager() {

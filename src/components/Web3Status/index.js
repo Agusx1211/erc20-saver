@@ -17,7 +17,6 @@ import WalletConnectIcon from '../../assets/images/walletConnectIcon.svg'
 import CoinbaseWalletIcon from '../../assets/images/coinbaseWalletIcon.svg'
 import FortmaticIcon from '../../assets/images/fortmaticIcon.png'
 import PortisIcon from '../../assets/images/portisIcon.png'
-import { NetworkContextName } from '../../constants'
 import Identicon from '../Identicon'
 
 const Web3StatusGeneric = styled.button`
@@ -120,8 +119,7 @@ const IconWrapper = styled.div`
 
 export default function Web3Status() {
   const { t } = useTranslation()
-  const { active, account, connector, error } = useWeb3React()
-  const contextNetwork = useWeb3React(NetworkContextName)
+  const { account, connector, error } = useWeb3React()
 
   const ENSName = useENSName(account)
 
@@ -188,10 +186,6 @@ export default function Web3Status() {
       )
     }
   }
-
-  // if (!contextNetwork.active && !active) {
-  //   return null
-  // }
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { useWeb3React } from '../../hooks'
 import { ERC20_META_ABI } from '../../constants/MetaERC20';
@@ -180,13 +180,13 @@ const INITIAL_STATE = {
 }
 
 function ApprovalsPage() {
-    const { account, chainId, error } = useWeb3React()
+    const { account } = useWeb3React()
     const [state, setState] = useState(INITIAL_STATE)
 
     console.log(account)
     useEffect(() => {
       async function fetch() {
-        if (account != undefined) {
+        if (account !== undefined) {
           const all = await getAllApproved(account)
           setState({
             ...INITIAL_STATE,
@@ -199,7 +199,7 @@ function ApprovalsPage() {
 
     useEffect(() => {
       async function fetch() {
-        if (account != undefined && state.pending.length != 0) {
+        if (account !== undefined && state.pending.length !== 0) {
           const cpending = state.pending.slice()
           const call = state.all.slice()
           const token = cpending.shift()
@@ -212,7 +212,7 @@ function ApprovalsPage() {
         }
       }
       fetch();
-    }, [state.pending.length])
+    }, [state.pending.length, account, state])
   
     console.log("Real approves", state)
     return (

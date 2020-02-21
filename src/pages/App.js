@@ -22,10 +22,6 @@ const styles = theme => ({
 });
 
 class App extends Component {
-  constructor() {
-    super();
-  }
-
   render() {
     const { classes } = this.props;
     return <div className={classes.content}>
