@@ -1,46 +1,56 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import ReactGA from 'react-ga'
-import { Web3ReactProvider, createWeb3ReactRoot } from '@web3-react/core'
-import { ethers } from 'ethers'
+import React from "react";
+import ReactDOM from "react-dom";
+import ReactGA from "react-ga";
+import { Web3ReactProvider, createWeb3ReactRoot } from "@web3-react/core";
+import { ethers } from "ethers";
 
-import { NetworkContextName } from './constants'
-import { isMobile } from 'react-device-detect'
-import LocalStorageContextProvider, { Updater as LocalStorageContextUpdater } from './contexts/LocalStorage'
-import ApplicationContextProvider, { Updater as ApplicationContextUpdater } from './contexts/Application'
-import TransactionContextProvider, { Updater as TransactionContextUpdater } from './contexts/Transactions'
-import App from './pages/App'
-import ThemeProvider, { GlobalStyle } from './theme'
+import { NetworkContextName } from "./constants";
+import { isMobile } from "react-device-detect";
+import LocalStorageContextProvider, {
+  Updater as LocalStorageContextUpdater
+} from "./contexts/LocalStorage";
+import ApplicationContextProvider, {
+  Updater as ApplicationContextUpdater
+} from "./contexts/Application";
+import TransactionContextProvider, {
+  Updater as TransactionContextUpdater
+} from "./contexts/Transactions";
+import App from "./pages/App";
+import ThemeProvider, { GlobalStyle } from "./theme";
 
-const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName)
+import "./index.css";
+
+const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName);
 
 function getLibrary(provider) {
-  const library = new ethers.providers.Web3Provider(provider)
-  library.pollingInterval = 10000
-  return library
+  const library = new ethers.providers.Web3Provider(provider);
+  library.pollingInterval = 10000;
+  return library;
 }
 
-if (process.env.NODE_ENV === 'production') {
-  ReactGA.initialize('UA-128182339-1')
+if (process.env.NODE_ENV === "production") {
+  ReactGA.initialize("UA-128182339-1");
   ReactGA.set({
-    customBrowserType: !isMobile ? 'desktop' : window.web3 || window.ethereum ? 'mobileWeb3' : 'mobileRegular'
-  })
+    customBrowserType: !isMobile
+      ? "desktop"
+      : window.web3 || window.ethereum
+      ? "mobileWeb3"
+      : "mobileRegular"
+  });
 } else {
-  ReactGA.initialize('test', { testMode: true })
+  ReactGA.initialize("test", { testMode: true });
 }
 
-ReactGA.pageview(window.location.pathname + window.location.search)
+ReactGA.pageview(window.location.pathname + window.location.search);
 
 function ContextProviders({ children }) {
   return (
     <LocalStorageContextProvider>
       <ApplicationContextProvider>
-        <TransactionContextProvider>
-          {children}
-        </TransactionContextProvider>
+        <TransactionContextProvider>{children}</TransactionContextProvider>
       </ApplicationContextProvider>
     </LocalStorageContextProvider>
-  )
+  );
 }
 
 function Updaters() {
@@ -50,7 +60,7 @@ function Updaters() {
       <ApplicationContextUpdater />
       <TransactionContextUpdater />
     </>
-  )
+  );
 }
 
 ReactDOM.render(
@@ -67,5 +77,5 @@ ReactDOM.render(
       </ContextProviders>
     </Web3ProviderNetwork>
   </Web3ReactProvider>,
-  document.getElementById('root')
-)
+  document.getElementById("root")
+);
