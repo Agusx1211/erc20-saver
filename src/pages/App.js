@@ -1,32 +1,34 @@
-import './App.css';
+import "./App.css";
 
 import React, { Component } from "react";
-import { withStyles } from '@material-ui/styles';
-import ApprovalsPage from '../components/ApprovalsPage'
+import { withStyles } from "@material-ui/styles";
+import ApprovalsPage from "../components/ApprovalsPage";
 
 const styles = theme => ({
   content: {
-    maxWidth: 950,
-    margin: 'auto',
+    maxWidth: 970,
+    margin: "auto",
     marginBottom: 110
   },
   title: {
-    fontSize: 14,
+    fontSize: 14
   },
   pos: {
-    marginBottom: 12,
+    marginBottom: 12
   },
   gridList: {
-    width: 950,
-  },
+    width: 970
+  }
 });
 
 class App extends Component {
   render() {
     const { classes } = this.props;
-    return <div className={classes.content}>
-      <ApprovalsPage></ApprovalsPage>
+    return (
+      <div className={classes.content}>
+        <ApprovalsPage></ApprovalsPage>
       </div>
+    );
   }
 }
 

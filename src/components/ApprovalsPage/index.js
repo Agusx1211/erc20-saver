@@ -298,7 +298,6 @@ async function realApprovalsForAll(obj) {
       const account = (await web3.eth.getAccounts())[0];
       try {
         const proxyAddress = await wyvernProxy.methods.proxies(account).call();
-        console.log(account, proxyAddress);
         if (proxyAddress.toLowerCase() === addr.toLowerCase()) {
           name = "Wyber Proxy Registry";
         }
@@ -429,7 +428,11 @@ function ApprovalsPage() {
                       sm={1}
                       md={1}
                       xl={2}
-                      style={{ display: "flex", flexWrap: "wrap" }}
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        width: "100%"
+                      }}
                     >
                       <Row
                         spacing={1}
@@ -438,7 +441,11 @@ function ApprovalsPage() {
                         sm={1}
                         md={1}
                         xl={2}
-                        style={{ display: "flex", flexWrap: "wrap" }}
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          width: "100%"
+                        }}
                       >
                         {item.real.map(entry => {
                           return (
@@ -485,8 +492,30 @@ function ApprovalsPage() {
                         </Typography>
                       )}
                     </div>
-                    <Grid cellHeight={180} cols={2}>
-                      <Row spacing={1} columnSpacing={0.5} sm={1} md={1} xl={2}>
+                    <Grid
+                      cellHeight={180}
+                      sm={1}
+                      md={1}
+                      xl={2}
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        width: "100%"
+                      }}
+                    >
+                      <Row
+                        spacing={1}
+                        columnSpacing={0.5}
+                        col
+                        sm={1}
+                        md={1}
+                        xl={2}
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          width: "100%"
+                        }}
+                      >
                         {item.real.map(entry => {
                           return (
                             <GridListTile
@@ -519,7 +548,7 @@ function ApprovalsPage() {
 
 const styles = theme => ({
   content: {
-    maxWidth: 950,
+    maxWidth: 1200,
     margin: "auto",
     marginBottom: 110
   },
@@ -536,14 +565,14 @@ const styles = theme => ({
 
 const useStyles2 = makeStyles(theme => ({
   content: {
-    maxWidth: 950,
+    maxWidth: 1200,
     margin: "auto"
   },
   card: {
     margin: "15px 0 15px 0",
     maxWidth: 460,
     padding: 12,
-    width: "calc(100% - 24px);"
+    cursor: "pointer"
   },
   title: {
     fontSize: 14
