@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import { useWeb3React } from "../../hooks";
 import { ERC20_META_ABI } from "../../constants/MetaERC20";
+import { ERC721_META_ABI } from "../../constants/MetaERC721";
 import { findProject } from "../../context/projects";
 import { amountFormatter } from "../../utils";
 import Web3Status from "../../components/Web3Status";
@@ -44,19 +45,21 @@ const TOKEN_TYPES = {
   ERC721: "erc721"
 };
 
+const APPROVAL_TYPE = {
+  ERC20_APPROVE: "erc20_approve",
+  ERC721_APPROVE: "erc721_approve",
+  ERC721_APPROVAL_FOR_ALL: "erc721_approvalForAll"
+};
+
 var web3 = new Web3(window.ethereum);
 
 const multicallConfig = {
   multicallAddress: "0xeefba1e63905ef1d7acba5a8513c70307c1ce441",
-  rpcUrl: "https://mainnet.infura.io/v3/9e3ecca44d4e4e34961e50a537e851c0"
+  rpcUrl: RPC_URL
 };
 
 // ComponentWillMount
 let target_address = "";
-
-function onlyUnique(value, index, self) {
-  return self.indexOf(value) === index;
-}
 
 function b(number) {
   return ethers.utils.bigNumberify(number);
@@ -70,20 +73,20 @@ async function getAllApproved(account) {
   const logs = await web3.eth.getPastLogs({
     fromBlock: 0,
     toBlock: "latest",
-    // address: tokens,
     topics: [
       "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925", // Approve topic
       `0x000000000000000000000000${account.replace("0x", "")}` // Account topic
     ]
   });
-  console.log(logs);
+
   let out = [];
   for (let i = 0; i < logs.length; i++) {
     const log = logs[i];
     if (!out.find(o => o.token === log.address)) {
       const obj = {
         token: log.address,
-        type: TOKEN_TYPES.ERC20,
+        tokenType: TOKEN_TYPES.ERC20,
+        approvalType: APPROVAL_TYPE.ERC20_APPROVE,
         approves: logs
           .filter(l => l.address === log.address)
           .map(l => l.topics[2].replace("0x000000000000000000000000", "0x"))
@@ -218,7 +221,8 @@ async function getApprovalsForAll(account) {
     if (!out.find(o => o.token === log.address)) {
       const obj = {
         token: log.address,
-        type: TOKEN_TYPES.ERC721
+        tokenType: TOKEN_TYPES.ERC721,
+        approvalType: APPROVAL_TYPE.ERC721_APPROVAL_FOR_ALL
       };
 
       let approves = [];
@@ -247,7 +251,7 @@ async function getApprovalsForAll(account) {
   return out;
 }
 
-async function realApprovalForAlls(obj) {
+async function realApprovalsForAll(obj) {
   const metaContract = await new web3.eth.Contract(ERC721_META_ABI, obj.token);
 
   const namePromise = metaContract.methods.name().call();
@@ -320,10 +324,12 @@ function ApprovalsPage() {
   useEffect(() => {
     async function fetch() {
       if (account !== undefined) {
-        const all = await getAllApproved(account);
+        const approvals = await getAllApproved(account);
+        const approvalsForAll = await getApprovalsForAll(account);
+        console.log("aaaaa", approvals, approvalsForAll);
         setState({
           ...INITIAL_STATE,
-          pending: all
+          pending: [...approvals, ...approvalsForAll]
         });
       }
     }
@@ -336,8 +342,20 @@ function ApprovalsPage() {
         const cpending = state.pending.slice();
         const call = state.all.slice();
         const token = cpending.shift();
-        const retrieve = await realApproves(account, token);
+
+        let retrieve;
+
+        switch (token.approvalType) {
+          case APPROVAL_TYPE.ERC20_APPROVE:
+            retrieve = await realApproves(account, token);
+            break;
+          case APPROVAL_TYPE.ERC721_APPROVAL_FOR_ALL:
+            retrieve = await realApprovalsForAll(token);
+            break;
+        }
+
         call.push(retrieve);
+
         setState({
           all: call,
           pending: cpending
@@ -346,6 +364,18 @@ function ApprovalsPage() {
     }
     fetch();
   }, [state.pending.length, account, state]);
+
+  const erc20Approves = state.all.filter(
+    a => a.approvalType === APPROVAL_TYPE.ERC20_APPROVE
+  );
+  const erc721Approves = state.all.filter(
+    a => a.approvalType === APPROVAL_TYPE.ERC721_APPROVE
+  );
+  const erc721ApprovalForAlls = state.all.filter(
+    a => a.approvalType === APPROVAL_TYPE.ERC721_APPROVAL_FOR_ALL
+  );
+
+  console.log(erc20Approves, erc721ApprovalForAlls);
 
   console.log("Real approves", state);
   return (
@@ -361,39 +391,83 @@ function ApprovalsPage() {
           <Web3Status />
         </HeaderElement>
       </HeaderFrame>
-      {state.all.map(item => {
-        return (
-          item.real.length > 0 && (
-            <div key={`t1-${item.token}`}>
-              <div style={{ marginTop: 45, marginLeft: 10 }}>
-                <Typography variant="h4">{item.symbol}</Typography>
-                {item.symbol !== item.name && (
-                  <Typography variant="h6" gutterBottom>
-                    {item.name.toString()}
-                  </Typography>
-                )}
+      {erc20Approves &&
+        erc20Approves.all.map(item => {
+          return (
+            item.real.length > 0 && (
+              <div key={`t1-${item.token}`}>
+                <div style={{ marginTop: 45, marginLeft: 10 }}>
+                  <Typography variant="h4">{item.symbol}</Typography>
+                  {item.symbol !== item.name && (
+                    <Typography variant="h6" gutterBottom>
+                      {item.name.toString()}
+                    </Typography>
+                  )}
+                </div>
+                <Grid cellHeight={180} cols={2}>
+                  <Row spacing={1} columnSpacing={0.5} sm={1} md={1} xl={2}>
+                    {item.real.map(entry => {
+                      return (
+                        <GridListTile
+                          key={`l1-${entry.addr}-${item.token}`}
+                          cols={1}
+                          style={{ height: "auto" }}
+                        >
+                          <AllowanceCard
+                            data={{ item: item, entry: entry }}
+                          ></AllowanceCard>
+                        </GridListTile>
+                      );
+                    })}
+                  </Row>
+                </Grid>
               </div>
-              <Grid cellHeight={180} cols={2}>
-                <Row spacing={1} columnSpacing={0.5} sm={1} md={1} xl={2}>
-                  {item.real.map(entry => {
-                    return (
-                      <GridListTile
-                        key={`l1-${entry.addr}-${item.token}`}
-                        cols={1}
-                        style={{ height: "auto" }}
-                      >
-                        <AllowanceCard
-                          data={{ item: item, entry: entry }}
-                        ></AllowanceCard>
-                      </GridListTile>
-                    );
-                  })}
-                </Row>
-              </Grid>
-            </div>
-          )
-        );
-      })}
+            )
+          );
+        })}
+
+      <HeaderFrame>
+        <HeaderElement>
+          <Typography variant="h3" gutterBottom>
+            ERC721 Allowances
+          </Typography>
+          <Typography gutterBottom>for address {account}</Typography>
+        </HeaderElement>
+      </HeaderFrame>
+      {erc721ApprovalForAlls &&
+        erc721ApprovalForAlls.all.map(item => {
+          return (
+            item.real.length > 0 && (
+              <div key={`t1-${item.token}`}>
+                <div style={{ marginTop: 45, marginLeft: 10 }}>
+                  <Typography variant="h4">{item.symbol}</Typography>
+                  {item.symbol !== item.name && (
+                    <Typography variant="h6" gutterBottom>
+                      {item.name.toString()}
+                    </Typography>
+                  )}
+                </div>
+                <Grid cellHeight={180} cols={2}>
+                  <Row spacing={1} columnSpacing={0.5} sm={1} md={1} xl={2}>
+                    {item.real.map(entry => {
+                      return (
+                        <GridListTile
+                          key={`l1-${entry.addr}-${item.token}`}
+                          cols={1}
+                          style={{ height: "auto" }}
+                        >
+                          <AllowanceCard
+                            data={{ item: item, entry: entry }}
+                          ></AllowanceCard>
+                        </GridListTile>
+                      );
+                    })}
+                  </Row>
+                </Grid>
+              </div>
+            )
+          );
+        })}
     </>
   );
 }
@@ -466,7 +540,7 @@ function AllowanceCard(props) {
   const handleRevoke = async () => {
     const { addr } = obj;
     let metaContract;
-    switch (item.type) {
+    switch (item.tokenType) {
       case TOKEN_TYPES.ERC20:
         metaContract = await new web3.eth.Contract(ERC20_META_ABI, item.token);
         if (
