@@ -48,9 +48,9 @@ const TOKEN_TYPES = {
 };
 
 const APPROVAL_TYPE = {
-  ERC20_APPROVE: "erc20_approve",
-  ERC721_APPROVE: "erc721_approve",
-  ERC721_APPROVAL_FOR_ALL: "erc721_approvalForAll"
+  ERC20_APPROVE: 0,
+  ERC721_APPROVE: 1,
+  ERC721_APPROVAL_FOR_ALL: 2
 };
 
 var web3 = new Web3(window.ethereum);
@@ -375,223 +375,121 @@ function ApprovalsPage() {
     fetch();
   }, [state.pending.length, account, state]);
 
-  const erc20Approves = state.all
-    ? state.all.filter(a => a.approvalType === APPROVAL_TYPE.ERC20_APPROVE)
-    : [];
+  // const erc20Approves = state.all
+  //   ? state.all.filter(a => a.approvalType === APPROVAL_TYPE.ERC20_APPROVE)
+  //   : [];
 
-  const erc721ApprovalForAlls = state.all
-    ? state.all.filter(
-        a => a.approvalType === APPROVAL_TYPE.ERC721_APPROVAL_FOR_ALL
-      )
-    : [];
+  // const erc721ApprovalForAlls = state.all
+  //   ? state.all.filter(
+  //       a => a.approvalType === APPROVAL_TYPE.ERC721_APPROVAL_FOR_ALL
+  //     )
+  //   : [];
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <div style={{ width: "200px" }}>
+      <HeaderFrame>
+        <HeaderElement>
+          <Typography variant="h3" gutterBottom>
+            Token allowances
+          </Typography>
+          {account && <Typography gutterBottom>for address {account}</Typography>}
+        </HeaderElement>
+        <HeaderElement>
           <Web3Status />
-        </div>
-      </div>
-      <Typography
-        align="center"
-        variant="h2"
-        gutterBottom
-        style={{ marginTop: "20px" }}
-      >
-        Token Guardian
-      </Typography>
-      {account && (
-        <>
-          <HeaderFrame>
-            <HeaderElement>
-              <Typography variant="h3" gutterBottom>
-                ERC20 Allowances
-              </Typography>
-              <Typography gutterBottom>for address {account}</Typography>
-            </HeaderElement>
-          </HeaderFrame>
-          {erc20Approves.length > 0 ? (
-            erc20Approves.map(item => {
-              return (
-                item.real.length > 0 && (
-                  <div key={`t1-${item.token}`}>
-                    <div style={{ marginTop: 45, marginLeft: 10 }}>
-                      <Typography variant="h4">{item.symbol}</Typography>
-                      {item.symbol !== item.name && (
-                        <Typography variant="h6" gutterBottom>
-                          {item.name.toString()}
-                        </Typography>
-                      )}
-                    </div>
-                    <Grid
-                      cellHeight={180}
-                      sm={1}
-                      md={1}
-                      xl={2}
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        width: "100%"
-                      }}
-                    >
-                      <Row
-                        spacing={1}
-                        columnSpacing={0.5}
-                        col
-                        sm={1}
-                        md={1}
-                        xl={2}
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          width: "100%"
-                        }}
-                      >
-                        {item.real.map(entry => {
-                          return (
-                            <GridListTile
-                              key={`l1-${entry.addr}-${item.token}`}
-                              cols={1}
-                              style={{ height: "auto" }}
-                            >
-                              <AllowanceCard
-                                data={{ item: item, entry: entry }}
-                              ></AllowanceCard>
-                            </GridListTile>
-                          );
-                        })}
-                      </Row>
-                    </Grid>
-                  </div>
-                )
-              );
-            })
-          ) : (
-            <p style={{ color: " #757575", fontSize: "14px" }}>
-              No ERC20 approvals found
-            </p>
-          )}
-          <HeaderFrame>
-            <HeaderElement>
-              <Typography variant="h3" gutterBottom>
-                ERC721 Allowances
-              </Typography>
-              <Typography gutterBottom>for address {account}</Typography>
-            </HeaderElement>
-          </HeaderFrame>
-          {erc721ApprovalForAlls.length > 0 ? (
-            erc721ApprovalForAlls.map(item => {
-              return (
-                item.real.length > 0 && (
-                  <div key={`t1-${item.token}`}>
-                    <div style={{ marginTop: 45, marginLeft: 10 }}>
-                      <Typography variant="h4">{item.symbol}</Typography>
-                      {item.symbol !== item.name && (
-                        <Typography variant="h6" gutterBottom>
-                          {item.name.toString()}
-                        </Typography>
-                      )}
-                    </div>
-                    <Grid
-                      cellHeight={180}
-                      sm={1}
-                      md={1}
-                      xl={2}
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        width: "100%"
-                      }}
-                    >
-                      <Row
-                        spacing={1}
-                        columnSpacing={0.5}
-                        col
-                        sm={1}
-                        md={1}
-                        xl={2}
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          width: "100%"
-                        }}
-                      >
-                        {item.real.map(entry => {
-                          return (
-                            <GridListTile
-                              key={`l1-${entry.addr}-${item.token}`}
-                              cols={1}
-                              style={{ height: "auto" }}
-                            >
-                              <AllowanceCard
-                                data={{ item: item, entry: entry }}
-                              ></AllowanceCard>
-                            </GridListTile>
-                          );
-                        })}
-                      </Row>
-                    </Grid>
-                  </div>
-                )
-              );
-            })
-          ) : (
-            <p style={{ color: " #757575", fontSize: "14px" }}>
-              No ERC721 approvals found
-            </p>
-          )}
-        </>
-      )}
+        </HeaderElement>
+      </HeaderFrame>
+      {state.all.map((item) => <TokenSection data={{item: item}}/>)}
     </>
   );
 }
-
 const styles = theme => ({
   content: {
-    maxWidth: 1200,
-    margin: "auto",
+    maxWidth: 950,
+    margin: 'auto',
     marginBottom: 110
   },
   title: {
-    fontSize: 14
+    fontSize: 14,
   },
   pos: {
-    marginBottom: 12
+    marginBottom: 12,
   },
   gridList: {
-    width: 950
-  }
+    width: 950,
+  },
 });
 
-const useStyles2 = makeStyles(theme => ({
+const useStyles2 = makeStyles(() => ({
   content: {
-    maxWidth: 1200,
-    margin: "auto"
+    maxWidth: 950,
+    margin: 'auto'
   },
   card: {
-    margin: "15px 0 15px 0",
-    maxWidth: 460,
-    padding: 12,
-    cursor: "pointer"
+    width: 430,
+    margin: 12,
+    padding: 12
   },
   title: {
-    fontSize: 14
+    fontSize: 14,
   },
   pos: {
-    marginBottom: 12
+    marginBottom: 12,
   },
   gridList: {
-    width: 950
-  },
-  expand: {
-    // transform: 'rotate(0deg)',
-    // marginLeft: 'auto',
-    // transition: theme.transitions.create('transform', {
-    //   duration: theme.transitions.duration.shortest,
-    // }),
-  },
-  avatar: {}
+    width: 950,
+  }
 }));
+
+function TokenSection(props) {
+  const item = props.data.item;
+  const type = item.type === APPROVAL_TYPE.APPROVAL_TYPE_ERC20 ? "ERC20" : "ERC721";
+  return (
+    <div key={`t1-${item.token}`}>
+      <div style={{ marginTop: 45, marginLeft: 10 }}>
+      <HeaderFrame>
+        <HeaderElement>
+        <Typography variant="h4">{item.symbol}</Typography>
+        </HeaderElement>
+        <HeaderElement>
+        <Typography variant="h4"><span style={{ color: "#c9c9c9" }}>{type}</span></Typography>
+        </HeaderElement>
+        </HeaderFrame>
+        {item.symbol !== item.name && (
+          <Typography variant="h6" gutterBottom>
+            {item.name.toString()}
+          </Typography>
+        )}
+      </div>
+      <Grid
+        cellHeight={180}
+        sm={1}
+        md={1}
+        xl={2}
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          width: "100%"
+        }}
+      >{
+        item.real.map(entry => {
+          return (
+            // <GridListTile
+            //   key={`l1-${entry.addr}-${item.token}`}
+            //   cols={1}
+            //   style={{ height: "auto" }}
+            // >
+            <div>
+              <AllowanceCard key={`l1-${entry.addr}-${item.token}`}
+                data={{ item: item, entry: entry }}
+              ></AllowanceCard>
+            </div>
+            // </GridListTile>
+          );
+        })}
+      </Grid>
+    </div>
+  )
+}
 
 function AllowanceCard(props) {
   // Declare a new state variable, which we'll call "count"
