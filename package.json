@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@input-output-hk/react-grid": "^1.0.3",
+    "@makerdao/multicall": "^0.10.0-rc.4",
+    "@material-ui/core": "^4.9.3",
     "@reach/dialog": "^0.8.4",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -26,7 +29,7 @@
     "react-feather": "^2.0.3",
     "react-ga": "^2.7.0",
     "react-i18next": "^11.3.3",
-    "react-scripts": "3.3.0",
+    "react-scripts": "^3.4.0",
     "react-spring": "^8.0.27",
     "react-use-gesture": "^7.0.4",
     "styled-components": "^5.0.1",
@@ -60,6 +63,7 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-react": "^7.18.3",
-    "eslint-plugin-standard": "^4.0.1"
+    "eslint-plugin-standard": "^4.0.1",
+    "prettier": "^1.19.1"
   }
 }
