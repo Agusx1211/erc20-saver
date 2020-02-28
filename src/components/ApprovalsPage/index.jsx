@@ -25,6 +25,7 @@ import Collapse from "@material-ui/core/Collapse";
 import Button from "@material-ui/core/Button";
 import { Grid } from "@input-output-hk/react-grid";
 import CircularProgress from '@material-ui/core/CircularProgress';
+import CheckIcon from '@material-ui/icons/Check';
 
 import styled from "styled-components";
 
@@ -549,12 +550,7 @@ function AllowanceCard(props) {
           {obj.project ? obj.project.title : "Unknown project"}
         </Typography>
         <CardHeader
-          avatar={
-            <Avatar
-              alt={item.symbol}
-              src="https://mpng.subpng.com/20180414/wbq/kisspng-check-mark-bottle-material-green-tick-5ad25466be87b7.8253866415237336067804.jpg"
-            />
-          }
+          avatar={<CheckIcon/>}
           title="Removed"
           subheader={obj.addr}
         />
