@@ -1,6 +1,8 @@
 import { ethers } from 'ethers'
 
 import { SUPPORTED_THEMES } from '../constants'
+import UncheckedJsonRpcSigner from './signer'
+
 
 export const ERROR_CODES = ['TOKEN_NAME', 'TOKEN_SYMBOL', 'TOKEN_DECIMALS'].reduce(
   (accumulator, currentValue, currentIndex) => {
@@ -152,4 +154,17 @@ export function amountFormatter(amount, baseDecimals = 18, displayDecimals = 3, 
       }
     }
   }
+}
+
+export function getProviderOrSigner(library, account) {
+  return account ? new UncheckedJsonRpcSigner(library.getSigner(account)) : library
+}
+
+// account is optional
+export function getContract(address, ABI, library, account) {
+  if (!isAddress(address) || address === ethers.constants.AddressZero) {
+    throw Error(`Invalid 'address' parameter '${address}'.`)
+  }
+
+  return new ethers.Contract(address, ABI, getProviderOrSigner(library, account))
 }

@@ -173,3 +173,28 @@ export function useAllTransactions() {
 
   return safeAccess(state, [chainId]) || {}
 }
+
+export const REMOVE_STATUS = {
+  NONE: 0,
+  PENDING: 1,
+  DONE: 2
+}
+
+export function useStatusRemoval(id) {
+  const allTransactions = useAllTransactions()
+
+  const all = Object.keys(allTransactions).filter(hash => 
+      allTransactions[hash][RESPONSE][CUSTOM_DATA].id === id
+  )
+
+  if (all.length === 0) {
+    return REMOVE_STATUS.NONE
+  }
+
+  const last = all.slice(-1)[0]
+  if (allTransactions[last][RECEIPT]) {
+    return REMOVE_STATUS.DONE;
+  } else {
+    return REMOVE_STATUS.PENDING;
+  }
+}

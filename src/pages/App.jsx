@@ -8,7 +8,7 @@ const styles = theme => ({
   content: {
     maxWidth: 970,
     margin: "auto",
-    // marginBottom: 110,
+    marginBottom: 110
   },
   title: {
     fontSize: 14
@@ -24,10 +24,11 @@ const styles = theme => ({
 class App extends Component {
   render() {
     const { classes } = this.props;
-    return (
+    return (<>
       <div className={classes.content}>
         <ApprovalsPage></ApprovalsPage>
       </div>
+      </>
     );
   }
 }

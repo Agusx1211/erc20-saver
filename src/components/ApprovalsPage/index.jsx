@@ -7,14 +7,14 @@ import { WYVERN_PROXY_REGISTRY_ABI } from "../../constants/WyvernProxyRegistry";
 
 import PROJECTS from "../../constants/Projects";
 import { findProject } from "../../context/projects";
-import { amountFormatter } from "../../utils";
+import { amountFormatter, getContract } from "../../utils";
+import { useTransactionAdder, useStatusRemoval, REMOVE_STATUS } from '../../contexts/Transactions'
 import Web3Status from "../../components/Web3Status";
 
 import Web3 from "web3";
 import { ethers } from "ethers";
 import { aggregate } from "@makerdao/multicall";
 import Typography from "@material-ui/core/Typography";
-import { withStyles } from "@material-ui/styles";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
@@ -23,10 +23,12 @@ import CardActions from "@material-ui/core/CardActions";
 import Avatar from "@material-ui/core/Avatar";
 import Collapse from "@material-ui/core/Collapse";
 import Button from "@material-ui/core/Button";
-import { Grid, Row } from "@input-output-hk/react-grid";
-import GridListTile from "@material-ui/core/GridListTile";
+import { Grid } from "@input-output-hk/react-grid";
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import styled from "styled-components";
+
+import './styles.css';
 
 const HeaderElement = styled.div`
   min-width: 0;
@@ -53,7 +55,7 @@ const APPROVAL_TYPE = {
   ERC721_APPROVAL_FOR_ALL: 2
 };
 
-var web3 = new Web3(window.ethereum);
+const readWeb3 = new Web3(RPC_URL);
 
 const multicallConfig = {
   multicallAddress: "0xeefba1e63905ef1d7acba5a8513c70307c1ce441",
@@ -68,8 +70,8 @@ async function getAllApproved(account) {
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
   }
-  console.log("LOADING LOGS");
-  const logs = await web3.eth.getPastLogs({
+
+  const logs = await readWeb3.eth.getPastLogs({
     fromBlock: 0,
     toBlock: "latest",
     topics: [
@@ -86,7 +88,7 @@ async function getAllApproved(account) {
         token: log.address,
         tokenType: TOKEN_TYPES.ERC20,
         approvalType: APPROVAL_TYPE.ERC20_APPROVE,
-        data: web3.utils.toHex(log.data),
+        data: readWeb3.utils.toHex(log.data),
         approves: logs
           .filter(l => l.address === log.address)
           .map(l => l.topics[2].replace("0x000000000000000000000000", "0x"))
@@ -147,7 +149,7 @@ async function realApproves(account, obj) {
     obj.symbol = "MKR";
     obj.name = "Maker DAO";
   } else {
-    let metaContract = await new web3.eth.Contract(ERC20_META_ABI, obj.token);
+    let metaContract = await new readWeb3.eth.Contract(ERC20_META_ABI, obj.token);
 
     const namePromise = metaContract.methods.name().call();
     const symbolPromise = metaContract.methods.symbol().call();
@@ -175,7 +177,12 @@ async function realApproves(account, obj) {
   let out = [];
   for (var key in result.results) {
     if (key === "b") {
-      obj.balance = b(result.results[key].toString());
+      try {
+        obj.balance = b(result.results[key].toString());
+        obj.balanceFormated = amountFormatter(obj.balance, obj.decimals)
+      } catch {
+        obj.balanceFormated = "???"
+      }
     } else if (key.includes("-")) {
       const amount = b(result.results[key].toString());
       let formated;
@@ -200,7 +207,7 @@ async function realApproves(account, obj) {
     }
   }
 
-  obj.logo = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${web3.utils.toChecksumAddress(
+  obj.logo = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${readWeb3.utils.toChecksumAddress(
     obj.token
   )}/logo.png`;
 
@@ -209,7 +216,7 @@ async function realApproves(account, obj) {
 }
 
 async function getApprovalsForAll(account) {
-  const logs = await web3.eth.getPastLogs({
+  const logs = await readWeb3.eth.getPastLogs({
     fromBlock: 0,
     toBlock: "latest",
     topics: [
@@ -233,7 +240,7 @@ async function getApprovalsForAll(account) {
       for (let i = 0; i < logs.length; i++) {
         const log = logs[i];
         if (obj.token === log.address) {
-          const isApproved = web3.utils.toDecimal(log.data) === 1;
+          const isApproved = readWeb3.utils.toDecimal(log.data) === 1;
 
           const operator = log.topics[2].replace(
             "0x000000000000000000000000",
@@ -255,8 +262,8 @@ async function getApprovalsForAll(account) {
   return out;
 }
 
-async function realApprovalsForAll(obj) {
-  const metaContract = await new web3.eth.Contract(ERC721_META_ABI, obj.token);
+async function realApprovalsForAll(obj, account) {
+  const metaContract = await new readWeb3.eth.Contract(ERC721_META_ABI, obj.token);
 
   const namePromise = metaContract.methods.name().call();
   const symbolPromise = metaContract.methods.symbol().call();
@@ -279,7 +286,7 @@ async function realApprovalsForAll(obj) {
 
   let out = [];
   for (let addr of obj.approves) {
-    const metaContract = await new web3.eth.Contract(ERC721_META_ABI, addr);
+    const metaContract = await new readWeb3.eth.Contract(ERC721_META_ABI, addr);
     const namePromise = PROJECTS[addr.toLowerCase()]
       ? PROJECTS[addr.toLowerCase()]
       : metaContract.methods.name().call();
@@ -291,11 +298,10 @@ async function realApprovalsForAll(obj) {
     } catch {
       name = addr;
       // Check for proxy used for OpenSea
-      const wyvernProxy = await new web3.eth.Contract(
+      const wyvernProxy = await new readWeb3.eth.Contract(
         WYVERN_PROXY_REGISTRY_ABI,
         "0xa5409ec958c83c3f309868babaca7c86dcb077c1"
       );
-      const account = (await web3.eth.getAccounts())[0];
       try {
         const proxyAddress = await wyvernProxy.methods.proxies(account).call();
         if (proxyAddress.toLowerCase() === addr.toLowerCase()) {
@@ -312,7 +318,7 @@ async function realApprovalsForAll(obj) {
     });
   }
 
-  obj.logo = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${web3.utils.toChecksumAddress(
+  obj.logo = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${readWeb3.utils.toChecksumAddress(
     obj.token
   )}/logo.png`;
 
@@ -322,7 +328,8 @@ async function realApprovalsForAll(obj) {
 
 const INITIAL_STATE = {
   pending: [],
-  all: []
+  all: [],
+  loaded: false
 };
 
 function ApprovalsPage() {
@@ -337,7 +344,8 @@ function ApprovalsPage() {
 
         setState({
           ...INITIAL_STATE,
-          pending: [...approvals, ...approvalsForAll]
+          pending: [...approvals, ...approvalsForAll],
+          loaded: true
         });
       }
     }
@@ -367,7 +375,8 @@ function ApprovalsPage() {
           call.push(retrieve);
           setState({
             all: call,
-            pending: cpending
+            pending: cpending,
+            loaded: true
           });
         }
       }
@@ -375,90 +384,82 @@ function ApprovalsPage() {
     fetch();
   }, [state.pending.length, account, state]);
 
-  // const erc20Approves = state.all
-  //   ? state.all.filter(a => a.approvalType === APPROVAL_TYPE.ERC20_APPROVE)
-  //   : [];
-
-  // const erc721ApprovalForAlls = state.all
-  //   ? state.all.filter(
-  //       a => a.approvalType === APPROVAL_TYPE.ERC721_APPROVAL_FOR_ALL
-  //     )
-  //   : [];
+  let total = 0;
+  state.all.forEach(t => t.real.forEach(() => total++ ));
 
   return (
     <>
-      <HeaderFrame>
-        <HeaderElement>
-          <Typography variant="h3" gutterBottom>
-            Token allowances
-          </Typography>
-          {account && <Typography gutterBottom>for address {account}</Typography>}
-        </HeaderElement>
-        <HeaderElement>
-          <Web3Status />
-        </HeaderElement>
-      </HeaderFrame>
-      {state.all.map((item) => <TokenSection data={{item: item}}/>)}
+      <div className={account && "main"}>
+      <div className={account ? "header" : "startScreen"}>
+        <div className={account ? "headerBody" : "headerBodyStart"}>
+          <HeaderElement>
+            <Typography variant="h3" style={{wordBreak: "break-word"}} gutterBottom>
+              Token allowances
+            </Typography>
+            {!account && <div style={{maxWidth: "600px", wordBreak: "break-word"}}>
+            Most of the dApps require you to "approve" a token before being able to use it; those approvals never expire, and those contracts (sometimes) can access your funds even when you are not using it.
+            <br/><br/>
+            This dApp allows you to see all contracts that currently can take tokens from your wallet, and remove those allowances.
+            </div>}
+          </HeaderElement>
+          <HeaderElement style={account && {marginBottom: "auto"}}>
+            <div className={!account && "web3status"}><Web3Status/></div>
+          </HeaderElement>
+        </div>
+        {account && <Typography style={{wordBreak: "break-word", fontSize: "1em"}} gutterBottom>for address {account}</Typography>}
+        {state.all.map((item) => <TokenSection data={{item: item}}/>)}
+        <div className="messageStyle">
+          {(account && state.loaded && total === 0 && state.pending.length === 0) && <>
+            This address didn't approved any contract 🔒
+          </>}
+          {(account && (!state.loaded || state.pending.length !== 0)) && <>
+            Loading ...
+          </>}
+        </div>
+      </div>
+      {(account && <footer className="credits">
+          Made with love by <a href="https://twitter.com/Agusx1211" target="_blank" rel="noopener noreferrer">Agus</a> and <a href="https://twitter.com/nachomazzara" target="_blank" rel="noopener noreferrer">Nacho</a>
+        </footer>)}
+      </div>
     </>
   );
 }
-const styles = theme => ({
-  content: {
-    maxWidth: 950,
-    margin: 'auto',
-    marginBottom: 110
-  },
-  title: {
-    fontSize: 14,
-  },
-  pos: {
-    marginBottom: 12,
-  },
-  gridList: {
-    width: 950,
-  },
-});
 
-const useStyles2 = makeStyles(() => ({
-  content: {
-    maxWidth: 950,
-    margin: 'auto'
-  },
-  card: {
-    width: 430,
-    margin: 12,
-    padding: 12
-  },
+const useStyles = makeStyles(() => ({
   title: {
     fontSize: 14,
   },
-  pos: {
-    marginBottom: 12,
-  },
-  gridList: {
-    width: 950,
-  }
 }));
 
 function TokenSection(props) {
   const item = props.data.item;
   const type = item.type === APPROVAL_TYPE.APPROVAL_TYPE_ERC20 ? "ERC20" : "ERC721";
+
+  if (item.real === 0) {
+    return <></>
+  }
+
   return (
-    <div key={`t1-${item.token}`}>
-      <div style={{ marginTop: 45, marginLeft: 10 }}>
+    <div key={`t1-${item.token}`} >
+      <div >
       <HeaderFrame>
         <HeaderElement>
-        <Typography variant="h4">{item.symbol}</Typography>
+        <div className="tokenTitle">{item.symbol}</div>
+        {item.symbol !== item.name && (
+          <div className="tokenName">
+            {item.name.toString()}
+          </div>
+        )}
         </HeaderElement>
         <HeaderElement>
-        <Typography variant="h4"><span style={{ color: "#c9c9c9" }}>{type}</span></Typography>
+        <span style={{ color: "#c9c9c9", textAlign: "right" }}>
+          <div className="tokenTitle">{type}</div>
+            <div className="tokenName">
+              {(item.balance !== 0) ? `${item.balanceFormated} ${item.symbol}` : "No balance"}
+            </div>
+          </span>
         </HeaderElement>
-        </HeaderFrame>
-        {item.symbol !== item.name && (
-          <Typography variant="h6" gutterBottom>
-            {item.name.toString()}
-          </Typography>
-        )}
+      </HeaderFrame>
       </div>
       <Grid
         cellHeight={180}
@@ -468,22 +469,17 @@ function TokenSection(props) {
         style={{
           display: "flex",
           flexWrap: "wrap",
-          width: "100%"
+          width: "100%",
+          marginTop: "12px"
         }}
       >{
         item.real.map(entry => {
           return (
-            // <GridListTile
-            //   key={`l1-${entry.addr}-${item.token}`}
-            //   cols={1}
-            //   style={{ height: "auto" }}
-            // >
-            <div>
+            <div class="cards-row">
               <AllowanceCard key={`l1-${entry.addr}-${item.token}`}
                 data={{ item: item, entry: entry }}
               ></AllowanceCard>
             </div>
-            // </GridListTile>
           );
         })}
       </Grid>
@@ -499,7 +495,7 @@ function AllowanceCard(props) {
     setExpanded(!expanded);
   };
 
-  const classes = useStyles2();
+  const classes = useStyles();
 
   const item = props.data.item;
   const obj = props.data.entry;
@@ -509,49 +505,83 @@ function AllowanceCard(props) {
     return false;
   };
 
+  const { library, account } = useWeb3React();
+  const addTransaction = useTransactionAdder()
+  const id = `${account}${obj.addr}${item.token}`
+
+  const statusRemoval = useStatusRemoval(id)
+
   const handleRevoke = async () => {
-    const from = (await web3.eth.getAccounts())[0];
     const { addr } = obj;
 
     let metaContract;
+    let tx;
 
     switch (item.tokenType) {
       case TOKEN_TYPES.ERC20:
-        metaContract = await new web3.eth.Contract(ERC20_META_ABI, item.token);
+        metaContract = getContract(item.token, ERC20_META_ABI, library, account);
         if (
           addr.toLowerCase() ===
           "0xB8c77482e45F1F44dE1745F52C74426C631bDD52".toLowerCase()
         ) {
           // BNB
-          await metaContract.methods.approve(addr, 1).send({ from });
+          tx = await metaContract.approve(addr, 1);
         } else {
-          await metaContract.methods.approve(addr, 0).send({ from });
+          tx = await metaContract.approve(addr, 0);
         }
         break;
       case TOKEN_TYPES.ERC721:
-        metaContract = await new web3.eth.Contract(ERC721_META_ABI, item.token);
-        await metaContract.methods
-          .setApprovalForAll(addr, false)
-          .send({ from });
+        metaContract = getContract(item.token, ERC721_META_ABI, library, account);
+        tx = await metaContract.setApprovalForAll(addr, false);
         break;
       default:
-        console.log("Unknown type");
         break;
     }
+
+    addTransaction(tx, { id: id });
   };
 
   return (
-    <Card className={classes.card}>
+    <div>
+    <Card className={"cardme"} onClick={handleExpandClick}>
+      { statusRemoval === REMOVE_STATUS.DONE && <>
+        <Typography className="cardTitle" color="textSecondary" gutterBottom>
+          {obj.project ? obj.project.title : "Unknown project"}
+        </Typography>
+        <CardHeader
+          avatar={
+            <Avatar
+              alt={item.symbol}
+              src="https://mpng.subpng.com/20180414/wbq/kisspng-check-mark-bottle-material-green-tick-5ad25466be87b7.8253866415237336067804.jpg"
+            />
+          }
+          title="Removed"
+          subheader={obj.addr}
+        />
+      </>
+      }
+      { statusRemoval === REMOVE_STATUS.PENDING && <>
+        <Typography className={classes.title} color="textSecondary" gutterBottom>
+          {obj.project ? obj.project.title : "Unknown project"}
+        </Typography>
+        <CardHeader
+          avatar={
+            <CircularProgress />
+          }
+          title="Removing..."
+          subheader={obj.addr}
+        />
+      </>
+      }
+      { statusRemoval === REMOVE_STATUS.NONE && <>
       <Typography className={classes.title} color="textSecondary" gutterBottom>
         {obj.project ? obj.project.title : "Unknown project"}
       </Typography>
       <CardHeader
-        onClick={handleExpandClick}
         avatar={
           <Avatar
             alt={item.symbol}
             src={item.logo}
-            className={classes.avatar}
           />
         }
         title={`${obj.formated || "All tokens"}`}
@@ -567,7 +597,9 @@ function AllowanceCard(props) {
           </Button>
         </CardActions>
       </Collapse>
+      </>}
     </Card>
+    </div>
   );
 }
 
@@ -576,4 +608,4 @@ function openInNewTab(url) {
   win.focus();
 }
 
-export default withStyles(styles)(ApprovalsPage);
+export default ApprovalsPage;
