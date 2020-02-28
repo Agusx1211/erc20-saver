@@ -435,7 +435,7 @@ function TokenSection(props) {
   const item = props.data.item;
   const type = item.type === APPROVAL_TYPE.APPROVAL_TYPE_ERC20 ? "ERC20" : "ERC721";
 
-  if (item.real === 0) {
+  if (item.real.length === 0) {
     return <></>
   }
 
