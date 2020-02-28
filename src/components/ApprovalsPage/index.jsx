@@ -338,7 +338,7 @@ function ApprovalsPage() {
 
   useEffect(() => {
     async function fetch() {
-      if (account !== undefined) {
+      if (account && account !== undefined) {
         const approvals = await getAllApproved(account);
         const approvalsForAll = await getApprovalsForAll(account);
 
@@ -354,7 +354,7 @@ function ApprovalsPage() {
 
   useEffect(() => {
     async function fetch() {
-      if (account !== undefined && state.pending.length !== 0) {
+      if (account && account !== undefined && state.pending.length !== 0) {
         const cpending = state.pending.slice();
         const call = state.all.slice();
         const token = cpending.shift();

@@ -3,6 +3,7 @@ import "./App.css";
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/styles";
 import ApprovalsPage from "../components/ApprovalsPage";
+import Web3ReactManager from '../components/Web3ReactManager';
 
 const styles = theme => ({
   content: {
@@ -25,9 +26,11 @@ class App extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <div className={classes.content}>
-        <ApprovalsPage></ApprovalsPage>
-      </div>
+      <Web3ReactManager>
+        <div className={classes.content}>
+          <ApprovalsPage></ApprovalsPage>
+        </div>
+      </Web3ReactManager>
     );
   }
 }
