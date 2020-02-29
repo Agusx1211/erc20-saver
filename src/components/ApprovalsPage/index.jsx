@@ -398,9 +398,9 @@ function ApprovalsPage() {
               Token allowances
             </Typography>
             {!account && <div style={{maxWidth: "600px", wordBreak: "break-word"}}>
-            Most of the dApps require you to "approve" a token before being able to use it; those approvals never expire, and those contracts (sometimes) can access your funds even when you are not using it.
+            Most dApps require you to "approve" a token before start using them; those approvals never expire, and those contracts (sometimes) can access your funds without your explicit permission.
             <br/><br/>
-            This dApp allows you to see all contracts that currently can take tokens from your wallet, and remove those allowances.
+            This dApp allows you to see all contracts that currently have access to your tokens, and remove those permissions.
             </div>}
           </HeaderElement>
           <HeaderElement style={account && {marginBottom: "auto"}}>
