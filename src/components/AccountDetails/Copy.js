@@ -35,10 +35,10 @@ export default function CopyHelper({ toCopy }) {
           <TransactionStatusText>Copied</TransactionStatusText>
         </TransactionStatusText>
       ) : (
-        <TransactionStatusText>
-          <Copy size={'16'} />
-        </TransactionStatusText>
-      )}
+          <TransactionStatusText>
+            <Copy size={'16'} />
+          </TransactionStatusText>
+        )}
     </CopyIcon>
   )
 }

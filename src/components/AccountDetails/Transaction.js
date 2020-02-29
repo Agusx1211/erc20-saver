@@ -66,7 +66,7 @@ const TransactionState = styled.div`
 
   :hover {
     border-color: ${({ pending, theme }) =>
-      pending ? transparentize(0, theme.royalBlue) : transparentize(0, theme.connectedGreen)};
+    pending ? transparentize(0, theme.royalBlue) : transparentize(0, theme.connectedGreen)};
   }
 `
 const ButtonWrapper = styled.div`
@@ -94,15 +94,15 @@ export default function Transaction({ hash, pending }) {
           </Link>
         </ButtonWrapper>
       ) : (
-        <ButtonWrapper pending={pending}>
-          <Link href={getEtherscanLink(chainId, hash, 'transaction')}>
-            <TransactionState pending={pending}>
-              <Check size="16" />
-              <TransactionStatusText>Confirmed</TransactionStatusText>
-            </TransactionState>
-          </Link>
-        </ButtonWrapper>
-      )}
+          <ButtonWrapper pending={pending}>
+            <Link href={getEtherscanLink(chainId, hash, 'transaction')}>
+              <TransactionState pending={pending}>
+                <Check size="16" />
+                <TransactionStatusText>Confirmed</TransactionStatusText>
+              </TransactionState>
+            </Link>
+          </ButtonWrapper>
+        )}
     </TransactionWrapper>
   )
 }

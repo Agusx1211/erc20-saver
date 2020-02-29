@@ -15,9 +15,9 @@ export const ERROR_CODES = ['TOKEN_NAME', 'TOKEN_SYMBOL', 'TOKEN_DECIMALS'].redu
 export function safeAccess(object, path) {
   return object
     ? path.reduce(
-        (accumulator, currentValue) => (accumulator && accumulator[currentValue] ? accumulator[currentValue] : null),
-        object
-      )
+      (accumulator, currentValue) => (accumulator && accumulator[currentValue] ? accumulator[currentValue] : null),
+      object
+    )
     : null
 }
 

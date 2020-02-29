@@ -22,8 +22,8 @@ const StyledDialogOverlay = styled(WrappedDialogOverlay).attrs({
     background-color: ${({ theme }) => 'transparent'};
 
     ${({ mobile }) =>
-      mobile &&
-      css`
+    mobile &&
+    css`
         align-items: flex-end;
       `}
 
@@ -56,13 +56,13 @@ const StyledDialogContent = styled(FilteredDialogContent)`
 
     max-width: 650px;
     ${({ maxHeight }) =>
-      maxHeight &&
-      css`
+    maxHeight &&
+    css`
         max-height: ${maxHeight}vh;
       `}
     ${({ minHeight }) =>
-      minHeight &&
-      css`
+    minHeight &&
+    css`
         min-height: ${minHeight}vh;
       `}
     display: flex;
@@ -77,7 +77,7 @@ const StyledDialogContent = styled(FilteredDialogContent)`
       width:  85vw;
       max-height: 66vh;
       ${mobile &&
-        css`
+    css`
           width: 100vw;
           border-radius: 20px;
           border-bottom-left-radius: 0;
