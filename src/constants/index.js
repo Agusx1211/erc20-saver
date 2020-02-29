@@ -59,7 +59,7 @@ export const SUPPORTED_WALLETS =
             name: 'Open in Trust Wallet',
             iconName: 'trustWallet.png',
             description: 'iOS and Android app.',
-            href: 'https://link.trustwallet.com/open_url?coin_id=60&url=https://uniswap.exchange/swap',
+            href: 'https://link.trustwallet.com/open_url?coin_id=60&url=https://tokensaver.xyz/',
             color: '#1C74CC',
             mobile: true,
             mobileOnly: true
