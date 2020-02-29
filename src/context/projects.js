@@ -1,10 +1,12 @@
 import { UNISWAP_POOLS } from './data/uniswap-pools'
+import PROJECTS from "../constants/Projects"
+
 
 export const MODULES = [
   evalUniswapPool
 ]
 
-export function findProject (addr) {
+export function findProject(addr) {
   for (let i = 0; i < MODULES.length; i++) {
     const mod = MODULES[i]
     const res = mod(addr)
@@ -13,10 +15,11 @@ export function findProject (addr) {
     }
   }
 
-  return undefined
+  return PROJECTS[addr.toLowerCase()]
+    ? { title: PROJECTS[addr.toLowerCase()] } : undefined
 }
 
-export function evalUniswapPool (addr) {
+export function evalUniswapPool(addr) {
   if (UNISWAP_POOLS.includes(addr.toLowerCase())) {
     return {
       title: 'Uniswap pool',
