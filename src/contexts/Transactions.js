@@ -183,8 +183,8 @@ export const REMOVE_STATUS = {
 export function useStatusRemoval(id) {
   const allTransactions = useAllTransactions()
 
-  const all = Object.keys(allTransactions).filter(hash => 
-      allTransactions[hash][RESPONSE][CUSTOM_DATA].id === id
+  const all = Object.keys(allTransactions).filter(hash =>
+    allTransactions[hash][RESPONSE][CUSTOM_DATA].id === id
   )
 
   if (all.length === 0) {
@@ -193,8 +193,8 @@ export function useStatusRemoval(id) {
 
   const last = all.slice(-1)[0]
   if (allTransactions[last][RECEIPT]) {
-    return REMOVE_STATUS.DONE;
+    return REMOVE_STATUS.DONE
   } else {
-    return REMOVE_STATUS.PENDING;
+    return REMOVE_STATUS.PENDING
   }
 }

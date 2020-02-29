@@ -94,8 +94,8 @@ export default function PendingView({ uri = '', size, connector, error = false, 
           ) : connector === walletconnect ? (
             'Scan QR code with a compatible wallet...'
           ) : (
-            'Initializing...'
-          )}
+                'Initializing...'
+              )}
         </LoadingWrapper>
       </LoadingMessage>
       {Object.keys(SUPPORTED_WALLETS).map(key => {

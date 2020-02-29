@@ -20,4 +20,4 @@ export const WYVERN_PROXY_REGISTRY_ABI = [
     stateMutability: "view",
     type: "function"
   }
-];
+]

@@ -1,8 +1,8 @@
-import "./App.css";
+import "./App.css"
 
-import React, { Component } from "react";
-import { withStyles } from "@material-ui/styles";
-import ApprovalsPage from "../components/ApprovalsPage";
+import React, { Component } from "react"
+import { withStyles } from "@material-ui/styles"
+import ApprovalsPage from "../components/ApprovalsPage"
 
 const styles = theme => ({
   content: {
@@ -19,18 +19,18 @@ const styles = theme => ({
   gridList: {
     width: 970
   }
-});
+})
 
 class App extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes } = this.props
     return (<>
       <div className={classes.content}>
         <ApprovalsPage></ApprovalsPage>
       </div>
-      </>
-    );
+    </>
+    )
   }
 }
 
-export default withStyles(styles)(App);
+export default withStyles(styles)(App)

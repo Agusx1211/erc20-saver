@@ -60,19 +60,19 @@ export function useInactiveListener(suppress = false) {
     if (ethereum && ethereum.on && !active && !error && !suppress) {
       const handleChainChanged = () => {
         // eat errors
-        activate(injected, undefined, true).catch(() => {})
+        activate(injected, undefined, true).catch(() => { })
       }
 
       const handleAccountsChanged = accounts => {
         if (accounts.length > 0) {
           // eat errors
-          activate(injected, undefined, true).catch(() => {})
+          activate(injected, undefined, true).catch(() => { })
         }
       }
 
       const handleNetworkChanged = () => {
         // eat errors
-        activate(injected, undefined, true).catch(() => {})
+        activate(injected, undefined, true).catch(() => { })
       }
 
       ethereum.on('chainChanged', handleChainChanged)
@@ -88,7 +88,7 @@ export function useInactiveListener(suppress = false) {
       }
     }
 
-    return () => {}
+    return () => { }
   }, [active, error, suppress, activate])
 }
 

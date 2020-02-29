@@ -337,13 +337,13 @@ export default function AccountDetails({
                     <Copy toCopy={ENSName} />
                   </AccountControl>
                 ) : (
-                  <AccountControl hasENS={!!ENSName} isENS={false}>
-                    <StyledLink hasENS={!!ENSName} isENS={false} href={getEtherscanLink(chainId, account, 'address')}>
-                      {account} ↗{' '}
-                    </StyledLink>
-                    <Copy toCopy={account} />
-                  </AccountControl>
-                )}
+                    <AccountControl hasENS={!!ENSName} isENS={false}>
+                      <StyledLink hasENS={!!ENSName} isENS={false} href={getEtherscanLink(chainId, account, 'address')}>
+                        {account} ↗{' '}
+                      </StyledLink>
+                      <Copy toCopy={account} />
+                    </AccountControl>
+                  )}
               </AccountGroupingRow>
             </InfoCard>
           </YourAccount>
@@ -368,10 +368,10 @@ export default function AccountDetails({
           {renderTransactions(confirmedTransactions, false)}
         </LowerSection>
       ) : (
-        <LowerSection>
-          <h5>Your transactions will appear here...</h5>
-        </LowerSection>
-      )}
+          <LowerSection>
+            <h5>Your transactions will appear here...</h5>
+          </LowerSection>
+        )}
     </>
   )
 }

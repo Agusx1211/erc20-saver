@@ -110,8 +110,8 @@ export default function Option({
               </GreenCircle>
             </CircleWrapper>
           ) : (
-            ''
-          )}
+              ''
+            )}
           {header}
         </HeaderText>
         {subheader && <SubHeader>{subheader}</SubHeader>}
