@@ -123,12 +123,12 @@ export function amountFormatter(amount, baseDecimals = 18, displayDecimals = 3, 
     // if balance is less than the minimum display amount
     if (amount.lt(minimumDisplayAmount)) {
       return useLessThan
-        ? `<${ethers.utils.formatUnits(minimumDisplayAmount, baseDecimals)}`
-        : `${ethers.utils.formatUnits(amount, baseDecimals)}`
+        ? `<${ethers.utils.formatUnits(minimumDisplayAmount, baseDecimals.toNumber())}`
+        : `${ethers.utils.formatUnits(amount, baseDecimals.toNumber())}`
     }
     // if the balance is greater than the minimum display amount
     else {
-      const stringAmount = ethers.utils.formatUnits(amount, baseDecimals)
+      const stringAmount = ethers.utils.formatUnits(amount, baseDecimals.toNumber())
 
       // if there isn't a decimal portion
       if (!stringAmount.match(/\./)) {
