@@ -314,7 +314,7 @@ async function realApprovalsForAll(account, obj) {
       try {
         const proxyAddress = await wyvernProxy.methods.proxies(account).call()
         if (proxyAddress.toLowerCase() === addr.toLowerCase()) {
-          name = "Wyber Proxy Registry"
+          name = "OpenSea Wyvern Proxy Registry"
         }
       } catch (e) {
         console.log(e.message)
